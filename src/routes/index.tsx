@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Heart, Mail, Trophy, Camera, Gamepad2, Gift, Volume2, VolumeX, UserRound, Sparkles, X } from "lucide-react";
+import { Heart, Mail, Trophy, Camera, Gamepad2, Gift, Volume2, VolumeX, Sparkles, X } from "lucide-react";
 import { GameMap } from "@/game/map";
 import { GamePanel, type PanelName } from "@/game/panels";
 import { GameProvider, useGame } from "@/game/store";
@@ -60,7 +60,7 @@ function BestieGame() {
         <button aria-label="Memories" onClick={() => open("memories")}><Camera /></button>
         <button aria-label="Achievements" onClick={() => open("achievements")}><Trophy /></button>
         <button aria-label="Games" onClick={() => open("games")}><Gamepad2 /></button>
-        <button aria-label="Gifts" onClick={() => open("memories")}><Gift /></button>
+        <button aria-label="Gifts" onClick={() => open("gifts")}><Gift /></button>
         <button aria-label={state.soundOn ? "Mute sound" : "Enable sound"} onClick={() => dispatch({ type: "SOUND" })}>
           {state.soundOn ? <Volume2 /> : <VolumeX />}
         </button>
