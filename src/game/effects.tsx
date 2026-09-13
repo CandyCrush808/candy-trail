@@ -1,0 +1,6 @@
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useState } from "react";
+
+export function AmbientEffects({theme}:{theme?:string}){const reduced=useReducedMotion();return <div className={`ambient ambient-${theme??"garden"}`} aria-hidden="true">{Array.from({length:10},(_,i)=><motion.i key={i} className="ambient-dot" style={{left:`${8+i*9}%`,top:`${6+(i*17)%85}%`}} animate={reduced?undefined:{y:[0,-14,0],rotate:[0,20,0]}} transition={{duration:4+i%3,repeat:Infinity,delay:i*.3}}>{i%3===0?"✦":i%3===1?"♡":"•"}</motion.i>)}</div>}
+export function XpToast({amount,onDone}:{amount:number;onDone:()=>void}){useEffect(()=>{const id=setTimeout(onDone,1500);return()=>clearTimeout(id)},[onDone]);return <motion.div className="xp-toast" initial={{opacity:0,y:15,scale:.8}} animate={{opacity:1,y:-35,scale:1}} exit={{opacity:0}}>{`+${amount} XP ✨`}</motion.div>}
+export function Celebration({title}:{title:string|null}){return <AnimatePresence>{title&&<motion.div className="celebration" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><motion.div initial={{scale:.6,y:40}} animate={{scale:1,y:0}}><span>✦ 🍬 ✦</span><strong>{title}</strong><small>Tap anywhere to continue</small></motion.div></motion.div>}</AnimatePresence>}
