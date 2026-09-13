@@ -18,6 +18,7 @@ const levelNames = [
   "Ribbon Run", "Balloon Boulevard", "The Chaos Carousel", "Heart-Shaped Detour", "Wonderland Promise",
   "Rainbow Arrival", "The Golden Gate", "Crown of Memories", "Castle of Us", "The Bestie Ending",
 ];
+
 const storyBits = [
   "A tiny candy seed is waiting for two besties to help it bloom.", "The flower path has lost its colors. A little laughter should bring them back.",
   `A gate only opens for the perfect inside joke: ${personal.insideJoke1}.`, "A shy butterfly has a friendship promise to deliver.",
@@ -35,7 +36,18 @@ const storyBits = [
   "The kingdom gate asks for stars, courage, and one truly terrible joke.", `Every tower holds a piece of ${personal.memory2}.`,
   "The castle doors open to a room built from shared stories.", "One last path leads to the reason this world was made.",
 ];
-export const levels: Level[] = levelNames.map((title, i) => ({ id: i + 1, world: Math.floor(i / 5) + 1, title, story: storyBits[i], objective: i % 3 === 0 ? "Find the three hidden sugar stars" : i % 3 === 1 ? "Help your companion clear the path" : "Complete the bestie challenge", xpReward: i === 29 ? 250 : 100 }));
+
+const levelObjective = (index: number): string =>
+  index % 3 === 0 ? "Find the three hidden sugar stars" : index % 3 === 1 ? "Help your companion clear the path" : "Complete the bestie challenge";
+
+export const levels: Level[] = levelNames.map((title, i) => ({
+  id: i + 1,
+  world: Math.floor(i / 5) + 1,
+  title,
+  story: storyBits[i] ?? "A new bestie adventure is waiting to begin.",
+  objective: levelObjective(i),
+  xpReward: i === 29 ? 250 : 100,
+}));
 
 export const messages: Mail[] = [
   { id:"m1", from:"YOU", icon:"💗", subject:"Your adventure starts here", body:`Hey ${personal.herName}—I made a tiny world for us. Start with Level 1.`, unlockAt:1 },
@@ -51,14 +63,31 @@ export const messages: Mail[] = [
   { id:"m11", from:"YOU", icon:"💌", subject:"One last thing", body:personal.specialMessage, unlockAt:30 },
 ];
 
+const memoryTypes = ["PHOTO", "FUNNY MOMENT", "INSIDE JOKE", "SONG", "SPECIAL MESSAGE"];
+const memoryTitles = [personal.memory1, "The Laugh We Couldn’t Stop", personal.insideJoke1, "Our Unofficial Theme Song", "A Note For You", personal.memory2, "Main Character Moment", personal.insideJoke2, "The Longest Voice Note", "That Random Tuesday", "Bestie Energy", "Still My Favorite"];
+const memoryCaptions = ["A placeholder for a photo worth keeping.", "Zero context. Maximum laughter.", "Nobody else would understand—and that is the point.", "The song that turns any room into our movie scene.", "For the days you forget how loved you are."];
+const memoryEmojis = ["📸", "😂", "💬", "🎵", "💌"];
+
 export const memories: Memory[] = Array.from({ length: 12 }, (_, i) => ({
-  id:`memory-${i+1}`, type:["PHOTO","FUNNY MOMENT","INSIDE JOKE","SONG","SPECIAL MESSAGE"][i%5],
-  title:[personal.memory1, "The Laugh We Couldn’t Stop", personal.insideJoke1, "Our Unofficial Theme Song", "A Note For You", personal.memory2, "Main Character Moment", personal.insideJoke2, "The Longest Voice Note", "That Random Tuesday", "Bestie Energy", "Still My Favorite"][i],
-  caption:["A placeholder for a photo worth keeping.","Zero context. Maximum laughter.","Nobody else would understand—and that is the point.","The song that turns any room into our movie scene.","For the days you forget how loved you are."][i%5],
-  note:`Replace this with your personal memory ${i+1}.`, unlockAt:Math.min(30, 2+i*2), emoji:["📸","😂","💬","🎵","💌"][i%5],
+  id: `memory-${i + 1}`,
+  type: memoryTypes[i % memoryTypes.length] ?? "PHOTO",
+  title: memoryTitles[i] ?? `Bestie Memory ${i + 1}`,
+  caption: memoryCaptions[i % memoryCaptions.length] ?? "A memory worth keeping.",
+  note: `Replace this with your personal memory ${i + 1}.`,
+  unlockAt: Math.min(30, 2 + i * 2),
+  emoji: memoryEmojis[i % memoryEmojis.length] ?? "💌",
 }));
 
-export const gifts: Gift[] = [2,4,7,10,13,16,19,22,26,29].map((level,i)=>({ id:`gift-${i+1}`, level, icon:["🎁","💗","💎","⭐","🧁"][i%5], label:["Pocket Promise","Hidden Heart","Sugar Gem","Lucky Star","Bestie Cupcake"][i%5], xp:50 }));
+const giftIcons = ["🎁", "💗", "💎", "⭐", "🧁"];
+const giftLabels = ["Pocket Promise", "Hidden Heart", "Sugar Gem", "Lucky Star", "Bestie Cupcake"];
+
+export const gifts: Gift[] = [2,4,7,10,13,16,19,22,26,29].map((level, i) => ({
+  id: `gift-${i + 1}`,
+  level,
+  icon: giftIcons[i % giftIcons.length] ?? "🎁",
+  label: giftLabels[i % giftLabels.length] ?? "Bestie Gift",
+  xp: 50,
+}));
 
 export const achievements: Achievement[] = [
   {id:"first",icon:"🏆",title:"First Adventure",detail:"Complete Level 1",target:1,metric:"levels"},
@@ -79,4 +108,8 @@ export const quizQuestions: QuizQuestion[] = [
   ["Who sends the longest voice notes?","Me","Her","A podcast, basically."], ["Who chooses the snacks?","Me","Her","A position of enormous responsibility."],
   ["Who laughs at the worst time?","Me","Her","Professional composure: unavailable."], ["Who says ‘five more minutes’?","Me","Her","Five is a flexible number."],
   ["Who remembers tiny details?","Me","Her","That is bestie superpower behavior."], ["Who would plan the trip?","Me","Her","One plans. Both improvise."],
-].map(([question,a,b,response])=>({question,options:[a,b] as [string,string],response}));
+].map(([question,a,b,response]) => ({
+  question: question ?? "Who is the ultimate bestie?",
+  options: [a ?? "Me", b ?? "Her"] as [string, string],
+  response: response ?? "Besties always win.",
+}));
