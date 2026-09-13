@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import confetti from "canvas-confetti";
-import { Gift, Lock, Play, Sparkles, Star } from "lucide-react";
+import { Lock, Play, Sparkles, Star } from "lucide-react";
 import bunny from "@/assets/bestie-bunny.png";
 import castle from "@/assets/forever-castle.png";
 import { gifts, levels, worlds } from "./data";
@@ -23,7 +23,8 @@ export function GameMap({ onSecret, onCelebrate }: { onSecret: () => void; onCel
   useEffect(() => {
     const el = refs.current[state.currentLevel];
     if (el) {
-      setTimeout(() => el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" }), 1200);
+      const timer = window.setTimeout(() => el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" }), 1200);
+      return () => window.clearTimeout(timer);
     }
   }, [reduced, state.currentLevel]);
 
@@ -38,7 +39,7 @@ export function GameMap({ onSecret, onCelebrate }: { onSecret: () => void; onCel
     if (wasNew) {
       confetti({ particleCount: 90, spread: 70, origin: { y: 0.55 }, colors: ["#f66b9f", "#f7d45b", "#78d9be", "#a982d8"] });
       if (selectedLevel.id % 5 === 0 && selectedLevel.id < 30) onCelebrate("NEW WORLD UNLOCKED!");
-      setTimeout(() => refs.current[Math.min(30, selectedLevel.id + 1)]?.scrollIntoView({ behavior: "smooth", block: "center" }), 500);
+      window.setTimeout(() => refs.current[Math.min(30, selectedLevel.id + 1)]?.scrollIntoView({ behavior: "smooth", block: "center" }), 500);
     }
     setSelected(null);
   }
@@ -72,13 +73,14 @@ export function GameMap({ onSecret, onCelebrate }: { onSecret: () => void; onCel
               <div className="level-stop" key={level.id} style={{ left: `${left}%`, top: `${top}%` }}>
                 {gift && (
                   <motion.button
-                    className="map-gift"
-                    aria-label={`Collect hidden ${gift.label}`}
+                    className={`map-gift ${locked ? "map-gift-locked" : ""}`}
+                    aria-label={locked ? `Hidden gift at level ${level.id}, locked` : `Collect hidden ${gift.label}`}
+                    disabled={locked}
                     {...ambientAnimation}
                     transition={{ duration: 2, repeat: Infinity }}
                     onClick={() => { dispatch({ type: "GIFT", id: gift.id }); playSound(state.soundOn, "reward"); }}
                   >
-                    <span>{gift.icon}</span>
+                    <span>{locked ? <Lock /> : gift.icon}</span>
                   </motion.button>
                 )}
                 <button
