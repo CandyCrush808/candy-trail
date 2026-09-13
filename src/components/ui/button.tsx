@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -16,6 +16,8 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        candy:
+          "bg-[linear-gradient(180deg,hsl(340_90%_78%)_0%,hsl(340_78%_62%)_55%,hsl(340_72%_54%)_100%)] text-white border border-white/60 shadow-[0_4px_0_hsl(340_55%_42%),0_8px_18px_hsl(340_70%_65%/0.35)] hover:brightness-105 hover:-translate-y-0.5 active:translate-y-[2px] active:shadow-[0_2px_0_hsl(340_55%_42%),0_4px_10px_hsl(340_70%_65%/0.25)] rounded-full font-bold",
       },
       size: {
         default: "h-9 px-4 py-2",
