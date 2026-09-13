@@ -1,16 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { achievements, memories, messages, quizQuestions } from "./data";
+import { achievements, gifts, memories, messages, quizQuestions } from "./data";
 import { gameConfig, personal } from "./config";
 import { useGame } from "./store";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Heart, Lock, RotateCcw, Sparkles } from "lucide-react";
 
-export type PanelName = "mail" | "profile" | "lives" | "memories" | "achievements" | "games" | "secret" | null;
+export type PanelName = "mail" | "profile" | "lives" | "memories" | "achievements" | "games" | "gifts" | "secret" | null;
 
 export function GamePanel({ panel, onClose }: { panel: PanelName; onClose: () => void }) {
-  return <Dialog open={panel !== null} onOpenChange={v => !v && onClose()}><DialogContent className="game-panel max-h-[88dvh] overflow-y-auto border-none p-0 sm:max-w-2xl"><DialogTitle className="sr-only">{panel ?? "Game panel"}</DialogTitle><DialogDescription className="sr-only">Bestie Candy Adventure game panel</DialogDescription><div className="panel-inner">{panel === "mail" && <MailPanel />}{panel === "profile" && <ProfilePanel openPanel={() => {}} />}{panel === "lives" && <LivesPanel />}{panel === "memories" && <MemoryPanel />}{panel === "achievements" && <AchievementsPanel />}{panel === "games" && <GamesPanel />}{panel === "secret" && <SecretPanel />}</div></DialogContent></Dialog>;
+  return <Dialog open={panel !== null} onOpenChange={v => !v && onClose()}><DialogContent className="game-panel max-h-[88dvh] overflow-y-auto border-none p-0 sm:max-w-2xl"><DialogTitle className="sr-only">{panel ?? "Game panel"}</DialogTitle><DialogDescription className="sr-only">Bestie Candy Adventure game panel</DialogDescription><div className="panel-inner">{panel === "mail" && <MailPanel />}{panel === "profile" && <ProfilePanel openPanel={() => {}} />}{panel === "lives" && <LivesPanel />}{panel === "memories" && <MemoryPanel />}{panel === "achievements" && <AchievementsPanel />}{panel === "games" && <GamesPanel />}{panel === "gifts" && <GiftsPanel />}{panel === "secret" && <SecretPanel />}</div></DialogContent></Dialog>;
 }
 
 function PanelHeading({ icon, title, subtitle }: { icon: string; title: string; subtitle: string }) { return <header className="panel-heading"><span>{icon}</span><div><p>BESTIE CANDY ADVENTURE</p><h2>{title}</h2><small>{subtitle}</small></div></header>; }
@@ -20,7 +20,25 @@ function MailPanel() { const { state, dispatch } = useGame(); return <><PanelHea
 function ProfilePanel({ openPanel: _openPanel }: { openPanel: (p: PanelName) => void }) { const { state, dispatch, starsTotal, unlockedMemories } = useGame(); const level = Math.floor(state.xp / gameConfig.xpPerPlayerLevel) + 1; const xpIn = state.xp % gameConfig.xpPerPlayerLevel; return <><PanelHeading icon="👤" title={gameConfig.playerLabel} subtitle={`Bestie Level ${level}`} /><div className="profile-orbit"><div className="profile-avatar">B</div><strong>{state.xp.toLocaleString()} BESTIE XP</strong><div className="xp-track"><i style={{ width: `${xpIn / gameConfig.xpPerPlayerLevel * 100}%` }} /></div><small>{xpIn} / {gameConfig.xpPerPlayerLevel} to next level</small></div><div className="stat-grid"><Stat icon="⭐" value={starsTotal} label="Stars" /><Stat icon="🎮" value={state.completedLevels.length} label="Levels" /><Stat icon="🎁" value={state.collectedGifts.length} label="Gifts" /><Stat icon="📸" value={unlockedMemories} label="Memories" /></div><div className="profile-note"><Sparkles /><p><b>Made for {personal.herName}</b><br />by {personal.yourName}, with a suspicious amount of sugar.</p></div><Button variant="outline" className="w-full" onClick={() => { if (confirm("Reset the whole adventure and return to Level 1?")) dispatch({ type: "RESET" }); }}><RotateCcw /> Reset progress</Button></>; }
 function Stat({ icon, value, label }: { icon: string; value: number; label: string }) { return <div><span>{icon}</span><b>{value}</b><small>{label}</small></div>; }
 
-function LivesPanel() { const { state } = useGame(); const remaining = Math.max(0, gameConfig.lifeRefillMs - (Date.now() - state.lastLifeTime)); const min = Math.floor(remaining / 60000); const sec = Math.floor((remaining % 60000) / 1000); return <><PanelHeading icon="💗" title="Your Lives" subtitle="Rest, recharge, adventure again" /><div className="big-hearts">{Array.from({ length: 5 }, (_, i) => <Heart key={i} className={i < state.lives ? "filled" : ""} />)}</div>{state.lives < 5 ? <><p className="timer-label">Next life in</p><div className="life-timer">{String(min).padStart(2, "0")}:{String(sec).padStart(2, "0")}</div><div className="xp-track"><i style={{ width: `${100 - remaining / gameConfig.lifeRefillMs * 100}%` }} /></div></> : <div className="full-lives">Full hearts. Big adventure energy!</div>}</>; }
+function LivesPanel() {
+  const { state } = useGame();
+  const [, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  const remaining = Math.max(0, gameConfig.lifeRefillMs - (Date.now() - state.lastLifeTime));
+  const min = Math.floor(remaining / 60000);
+  const sec = Math.floor((remaining % 60000) / 1000);
+  const progress = Math.min(100, Math.max(0, 100 - (remaining / gameConfig.lifeRefillMs) * 100));
+  return <><PanelHeading icon="💗" title="Your Lives" subtitle="Rest, recharge, adventure again" /><div className="big-hearts">{Array.from({ length: gameConfig.maxLives }, (_, i) => <Heart key={i} className={i < state.lives ? "filled" : ""} />)}</div>{state.lives < gameConfig.maxLives ? <><p className="timer-label">Next life in</p><div className="life-timer">{String(min).padStart(2, "0")}:{String(sec).padStart(2, "0")}</div><div className="xp-track"><i style={{ width: `${progress}%` }} /></div></> : <div className="full-lives">Full hearts. Big adventure energy!</div>}</>;
+}
+
+function GiftsPanel() {
+  const { state, dispatch } = useGame();
+  const nextGift = gifts.find(g => !state.collectedGifts.includes(g.id) && g.level > state.currentLevel);
+  return <><PanelHeading icon="🎁" title="Bestie Gifts" subtitle="Little surprises hidden along the candy trail" /><div className="memory-grid">{gifts.map(g => { const collected = state.collectedGifts.includes(g.id); const unlocked = g.level <= state.currentLevel; return <article key={g.id} className={`memory-card ${!unlocked ? "memory-locked" : ""}`}><div className="memory-photo">{collected ? g.icon : unlocked ? <button className="gift-collect-button" aria-label={`Collect ${g.label}`} onClick={() => dispatch({ type: "GIFT", id: g.id })}>🎁</button> : <Lock />}</div><span>{collected ? "COLLECTED" : unlocked ? `LEVEL ${g.level}` : `LEVEL ${g.level}`}</span><h3>{g.label}</h3><p>{collected ? `+${g.xp} XP earned.` : unlocked ? "A hidden gift is waiting on the map." : `Reach Level ${g.level} to reveal this gift.`}</p></article>; })}</div>{nextGift && <p className="text-center text-sm opacity-70">Next hidden gift: Level {nextGift.level} ✨</p>}</>;
+}
 
 function MemoryPanel() { const { state } = useGame(); return <><PanelHeading icon="📸" title="Memory Lane" subtitle="A scrapbook that grows with your journey" /><div className="memory-grid">{memories.map(m => { const unlocked = m.unlockAt <= state.currentLevel; return <article key={m.id} className={`memory-card ${unlocked ? "" : "memory-locked"}`}><div className="memory-photo">{unlocked ? m.emoji : <Lock />}</div><span>{unlocked ? m.type : `LEVEL ${m.unlockAt}`}</span><h3>{unlocked ? m.title : "Memory locked"}</h3><p>{unlocked ? m.caption : `Reach Level ${m.unlockAt} to reveal this page.`}</p>{unlocked && <small>{m.note}</small>}</article>; })}</div></>; }
 
